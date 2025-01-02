@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: es_postgres
+    environment:
+      POSTGRES_USER: esuser
+      POSTGRES_PASSWORD: espassword
+      POSTGRES_DB: esdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - es_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esuser -d esdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  es_network:
+    driver: local
+
+volumes:
+  postgres_data:
+    driver: local
