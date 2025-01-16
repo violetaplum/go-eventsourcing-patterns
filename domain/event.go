@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type EventType string
 
@@ -32,6 +35,11 @@ type MoneyWithdrawnEvent struct {
 	AccountId string
 	Amount    int32
 	Timestamp time.Time
+}
+
+type EventStore interface {
+	Save(ctx context.Context, accountId string, events []Event) error
+	Load(ctx context.Context, accountId string) ([]Event, error)
 }
 
 // AccountCreatedEvent implements Event

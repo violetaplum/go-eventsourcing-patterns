@@ -50,11 +50,6 @@ type QueryUseCase interface {
 	GetBalance(ctx context.Context, req GetBalanceQuery) (*AccountView, error)
 }
 
-type EventStore interface {
-	Save(ctx context.Context, accountId string, events []Event) error
-	Load(ctx context.Context, accountId string) ([]Event, error)
-}
-
 type ReadStore interface {
 	GetAccount(ctx context.Context, accountId string) (*AccountView, error)
 }
