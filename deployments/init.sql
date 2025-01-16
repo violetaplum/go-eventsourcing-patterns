@@ -18,5 +18,6 @@ CREATE TABLE account_view (
                               id VARCHAR(36) PRIMARY KEY,
                               balance BIGINT NOT NULL,
                               version INT NOT NULL,
-                              updated_at TIMESTAMP NOT NULL
+                              updated_at TIMESTAMP NOT NULL,
+                              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
