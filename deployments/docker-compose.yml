@@ -1,30 +1,41 @@
-version: '3.8'
-
+version: '3'
 services:
   postgres:
     image: postgres:latest
-    container_name: es_postgres
     environment:
-      POSTGRES_USER: esuser
-      POSTGRES_PASSWORD: espassword
-      POSTGRES_DB: esdb
+      POSTGRES_DB: eventstore
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - es_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U esuser -d esdb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-networks:
-  es_network:
-    driver: local
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      KAFKA_PROCESS_ROLES: 'broker,controller' # KRaft 모드 활성화, zookeeper 없이 실행 가능하게함
+      KAFKA_NODE_ID: 1 # 노드 ID
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
 
-volumes:
-  postgres_data:
-    driver: local
+      # 리스너 관련 설정
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+    
+      # 클러스터 식별자
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A==' # 클러스터 식별을 위한 UUID
+    ports:
+      - "9092:9092"
+
+  app:
+    build:
+      context: .
+      dockerfile: deployments/app/Dockerfile
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      DB_HOST: postgres
+      KAFKA_BROKERS: kafka:9092

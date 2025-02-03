@@ -1,3 +1,5 @@
+// domain/account.go
+
 package domain
 
 import (
@@ -5,28 +7,30 @@ import (
 	"time"
 )
 
+// Account 모델
 type Account struct {
-	ID        string    `gorm:"primaryKey;type:uuid"` // UUID 타입의 기본키 설정
-	Balance   int64     `gorm:"not null"`             // 잔액을 나타내며 null을 허용하지 않음
-	Events    []Event   // 관련된 도메인 이벤트
-	CreatedAt time.Time `gorm:"autoCreateTime"` // 생성 시간 자동 설정
-	UpdatedAt time.Time `gorm:"autoUpdateTime"` // 업데이트 시간 자동 설정
+	ID        string    `json:"id"`
+	Balance   int64     `json:"balance"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// Command 요청 구조체들
 type CreateAccountCommand struct {
 	AccountID string
 }
 
 type DepositMoneyCommand struct {
 	AccountID string
-	Amount    int32
+	Amount    int64
 }
 
 type WithdrawMoneyCommand struct {
 	AccountID string
-	Amount    int32
+	Amount    int64
 }
 
+// Query 요청 구조체들
 type GetAccountQuery struct {
 	AccountID string
 }
@@ -35,29 +39,36 @@ type GetBalanceQuery struct {
 	AccountID string
 }
 
+// AccountView는 조회용 모델
 type AccountView struct {
-	ID       string
-	Balance  int32
-	UpdateAt time.Time
+	ID      string
+	Balance int64
 }
 
 //go:generate mockgen -source=account.go -destination=../mock/mock_account.go -package=mock
 
-type CommandUseCase interface {
-	CreateAccount(ctx context.Context, req CreateAccountCommand) error
-	DepositMoney(ctx context.Context, req DepositMoneyCommand) error
-	WithDrawMoney(ctx context.Context, req WithdrawMoneyCommand) error
+// AccountCommandService 커맨드(쓰기) 작업을 위한 인터페이스
+type AccountCommandService interface {
+	CreateAccount(ctx context.Context, cmd CreateAccountCommand) error
+	DepositMoney(ctx context.Context, cmd DepositMoneyCommand) error
+	WithdrawMoney(ctx context.Context, cmd WithdrawMoneyCommand) error
 }
 
-type QueryUseCase interface {
-	GetAccount(ctx context.Context, req GetAccountQuery) (*AccountView, error)
-	GetBalance(ctx context.Context, req GetBalanceQuery) (*AccountView, error)
+// AccountQueryService 쿼리(읽기) 작업을 위한 인터페이스
+type AccountQueryService interface {
+	GetAccount(ctx context.Context, query GetAccountQuery) (*AccountView, error)
+	GetBalance(ctx context.Context, query GetBalanceQuery) (*AccountView, error)
 }
 
-type AccountStore interface {
-	Create(ctx context.Context, account Account) error                      // 계좌 생성
-	GetByID(ctx context.Context, accountID string) (Account, error)         // 계좌 ID로 조회
-	Update(ctx context.Context, account Account) error                      // 계좌 업데이트
-	Delete(ctx context.Context, accountID string) error                     // 계좌 삭제
-	GetAccount(ctx context.Context, accountId string) (*AccountView, error) // account_view 조회
+// AccountRepository 저장소 작업을 위한 인터페이스
+type AccountRepository interface {
+	Save(ctx context.Context, account *Account) error
+	FindByID(ctx context.Context, id string) (*Account, error)
+	Update(ctx context.Context, account *Account) error
+}
+
+// EventStore 이벤트 저장소 작업을 위한 인터페이스
+type EventStore interface {
+	SaveEvents(ctx context.Context, accountID string, events []Event) error
+	GetEvents(ctx context.Context, accountID string) ([]Event, error)
 }

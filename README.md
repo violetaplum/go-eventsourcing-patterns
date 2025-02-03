@@ -25,44 +25,38 @@ This project focuses on:
 ## 📁 Project Structure
 
 ```
-├── cmd/
-│   └── api/                    # 애플리케이션 진입점
+.
+├── README.md
+├── cmd
+│   └── api
 │       └── main.go
-│
-├── domain/                     # 모든 인터페이스와 도메인 엔티티
-│   ├── entity/                # 도메인 엔티티
-│   │   ├── account.go         # Account 애그리게잇
-│   │   └── event.go           # 도메인 이벤트 정의
-│   │
-│   ├── repository/            # 저장소 인터페이스
-│   │   ├── event_store.go     # 이벤트 저장소 인터페이스
-│   │   └── read_store.go      # 읽기 모델 저장소 인터페이스
-│   │
-│   ├── service/               # 도메인 서비스 인터페이스
-│   │   ├── event_publisher.go
-│   │   └── event_handler.go
-│   │
-│   └── usecase/               # 유스케이스 인터페이스
-│       ├── command/
-│       │   ├── create_account.go
-│       │   └── deposit_money.go
-│       └── query/
-│           ├── get_balance.go
-│           └── get_history.go
-│
-├── router/                    # 라우팅 설정
-│   └── router.go
-│
-├── controller/                # HTTP 요청 처리
-│   ├── account_controller.go
-│   └── dto/
-│
-├── usecase/                  # 유스케이스 구현체
-│   ├── command/
-│   └── query/
-│
-└── repository/               # 리포지토리 구현체
-    └── postgres/
+├── domain                    
+│   ├── aggregate            
+│   │   └── account.go      
+│   ├── event              
+│   │   └── event.go       
+│   └── vo                  
+│       └── money.go        
+├── application             
+│   ├── command            
+│   │   └── account_command.go
+│   └── query              
+│       └── account_query.go
+├── infrastructure         
+│   └── persistence
+│       └── postgres
+│           ├── account_repository.go
+│           └── event_store.go
+├── interface             
+│   └── http
+│       └── account_handler.go
+├── deployments           # Docker 관련 설정
+│   ├── docker-compose.yml
+│   ├── app
+│   │   └── Dockerfile
+│   └── postgres
+│       └── init.sql
+└── tests
 ```
 
 ## 🔥 Implementation Features

@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-type EventType string
-
 const (
 	AccountCreated EventType = "AccountCreated"
 	MoneyDeposited EventType = "MoneyDeposited"
@@ -14,81 +12,24 @@ const (
 )
 
 type Event interface {
-	GetType() EventType
-	GetAggregateId() string
-	GetData() interface{}
-	GetTimestamp() time.Time
+	AggregateID() string
+	EventType() string
+	Version() int
+	Timestamp() time.Time
+	Data() interface{}
 }
 
-type AccountCreatedEvent struct {
-	AccountId string
-	Timestamp time.Time
+// domain/event.go
+type EventPublisher interface {
+	Publish(ctx context.Context, event Event) error
+	PublishAll(ctx context.Context, events []Event) error
 }
 
-type MoneyDepositedEvent struct {
-	AccountId string
-	Amount    int32
-	Timestamp time.Time
+type EventHandler interface {
+	Handle(ctx context.Context, event Event) error
 }
 
-type MoneyWithdrawnEvent struct {
-	AccountId string
-	Amount    int32
-	Timestamp time.Time
-}
-
-type EventStore interface {
-	Save(ctx context.Context, accountId string, events []Event) error
-	Load(ctx context.Context, accountId string) ([]Event, error)
-}
-
-// AccountCreatedEvent implements Event
-func (e AccountCreatedEvent) GetType() EventType {
-	return AccountCreated
-}
-
-func (e AccountCreatedEvent) GetAggregateId() string {
-	return e.AccountId
-}
-
-func (e AccountCreatedEvent) GetData() interface{} {
-	return e
-}
-
-func (e AccountCreatedEvent) GetTimestamp() time.Time {
-	return e.Timestamp
-}
-
-// MoneyDepositedEvent implements Event
-func (e MoneyDepositedEvent) GetType() EventType {
-	return MoneyDeposited
-}
-
-func (e MoneyDepositedEvent) GetAggregateId() string {
-	return e.AccountId
-}
-
-func (e MoneyDepositedEvent) GetData() interface{} {
-	return e
-}
-
-func (e MoneyDepositedEvent) GetTimestamp() time.Time {
-	return e.Timestamp
-}
-
-// MoneyWithdrawnEvent implements Event
-func (e MoneyWithdrawnEvent) GetType() EventType {
-	return MoneyWithdrawn
-}
-
-func (e MoneyWithdrawnEvent) GetAggregateId() string {
-	return e.AccountId
-}
-
-func (e MoneyWithdrawnEvent) GetData() interface{} {
-	return e
-}
-
-func (e MoneyWithdrawnEvent) GetTimestamp() time.Time {
-	return e.Timestamp
+type EventBus interface {
+	Subscribe(eventType string, handler EventHandler)
+	Publish(ctx context.Context, event Event) error
 }
