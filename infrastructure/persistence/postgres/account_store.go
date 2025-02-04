@@ -1,0 +1,45 @@
+package postgres
+
+import (
+	"context"
+	"go-eventsourcing-patterns/domain"
+	"gorm.io/gorm"
+)
+
+type AccountStore struct {
+	db *gorm.DB
+}
+
+func NewAccountStore(db *gorm.DB) *AccountStore {
+	return &AccountStore{
+		db: db,
+	}
+}
+
+// Save 새 계좌 생성
+func (r *AccountStore) Create(ctx context.Context, account *domain.Account) error {
+	tx := r.db.WithContext(ctx).Create(account)
+	return tx.Error
+}
+
+// FindByID ID로 계좌 조회
+func (r *AccountStore) FindByID(ctx context.Context, id string) (*domain.Account, error) {
+	var account domain.Account
+	tx := r.db.WithContext(ctx).First(&account, "id = ?", id)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return &account, nil
+}
+
+// Update 계좌 정보 업데이트
+func (r *AccountStore) Update(ctx context.Context, account *domain.Account) error {
+	tx := r.db.WithContext(ctx).Save(account)
+	return tx.Error
+}
+
+// Delete 계좌 삭제
+func (r *AccountStore) Delete(ctx context.Context, id string) error {
+	tx := r.db.WithContext(ctx).Delete(&domain.Account{}, "id = ?", id)
+	return tx.Error
+}
