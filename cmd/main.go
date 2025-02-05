@@ -1,7 +1,6 @@
 package cmd
 
 import (
-
 	"github.com/gin-gonic/gin"
 	"go-eventsourcing-patterns/application/command"
 	"go-eventsourcing-patterns/application/query"
@@ -28,8 +27,6 @@ func main() {
 
 	accountStore := store.NewAccountStore(db)
 	eventStore := store.NewEventStore(db)
-
-	eventPublisher := 
 
 	//eventPublisher domain.EventPublisher,
 	//	txManager domain.TransactionManager,
