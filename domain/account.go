@@ -52,15 +52,25 @@ type AccountResponse struct {
 	Balance   int64     `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	TotalDeposits    int64 `json:"total_deposits"`
+	TotalWithdrawals int64 `json:"total_withdrawals"`
+	TransactionCount int   `json:"transaction_count"`
 }
 
 //go:generate mockgen -source=account.go -destination=../mock/mock_account.go -package=mock
 
 // Account 서비스 인터페이스
-type AccountService interface {
+type AccountCommandService interface {
 	CreateAccount(ctx context.Context, cmd CreateAccountCommand) error
 	Deposit(ctx context.Context, cmd DepositCommand) error
 	Withdraw(ctx context.Context, cmd WithdrawCommand) error
+}
+
+type AccountQueryService interface {
+	GetAccountByID(ctx context.Context, accountID string) (*AccountResponse, error)
+	ListAccounts(ctx context.Context) ([]AccountResponse, error)
+	GetAccountHistory(ctx context.Context, accountID string) ([]Event, error)
 }
 
 // Account 저장소 인터페이스
@@ -68,4 +78,5 @@ type AccountStore interface {
 	Create(ctx context.Context, account *Account) error
 	FindByID(ctx context.Context, id string) (*Account, error)
 	Update(ctx context.Context, account *Account) error
+	ListAll(ctx context.Context) ([]*Account, error)
 }

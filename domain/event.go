@@ -72,7 +72,6 @@ func (e MoneyWithdrawnEvent) GetVersion() int         { return 1 }
 func (e MoneyWithdrawnEvent) GetCreatedAt() time.Time { return e.CreatedAt }
 func (e MoneyWithdrawnEvent) GetData() interface{}    { return e }
 
-// 추가: 이벤트 저장소 인터페이스
 type EventStore interface {
 	Save(ctx context.Context, accountId string, events []Event) error
 	Load(ctx context.Context, accountId string) ([]Event, error)

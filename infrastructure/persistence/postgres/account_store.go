@@ -43,3 +43,13 @@ func (r *AccountStore) Delete(ctx context.Context, id string) error {
 	tx := r.db.WithContext(ctx).Delete(&domain.Account{}, "id = ?", id)
 	return tx.Error
 }
+
+// ListAll 모든 계좌 조회
+func (s *AccountStore) ListAll(ctx context.Context) ([]*domain.Account, error) {
+	var accounts []*domain.Account
+	tx := s.db.WithContext(ctx).Find(&accounts)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return accounts, nil
+}

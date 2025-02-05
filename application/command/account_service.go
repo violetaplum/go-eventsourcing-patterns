@@ -8,20 +8,20 @@ import (
 	"time"
 )
 
-type AccountService struct {
+type AccountCommandService struct {
 	accountStore   domain.AccountStore
 	eventStore     domain.EventStore
 	eventPublisher domain.EventPublisher
 	txManager      domain.TransactionManager
 }
 
-func NewAccountService(
+func NewAccountCommandService(
 	accountStore domain.AccountStore,
 	eventStore domain.EventStore,
 	eventPublisher domain.EventPublisher,
 	txManager domain.TransactionManager,
-) *AccountService {
-	return &AccountService{
+) *AccountCommandService {
+	return &AccountCommandService{
 		accountStore:   accountStore,
 		eventStore:     eventStore,
 		eventPublisher: eventPublisher,
@@ -30,7 +30,7 @@ func NewAccountService(
 }
 
 // CreateAccount는 Command를 받아서 처리
-func (s *AccountService) CreateAccount(ctx context.Context, cmd domain.CreateAccountCommand) error {
+func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.CreateAccountCommand) error {
 	ctx, err := s.txManager.Begin(ctx)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, cmd domain.CreateAcc
 }
 
 // Deposit은 Command를 받아서 처리
-func (s *AccountService) Deposit(ctx context.Context, cmd domain.DepositCommand) error {
+func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositCommand) error {
 	ctx, err := s.txManager.Begin(ctx)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (s *AccountService) Deposit(ctx context.Context, cmd domain.DepositCommand)
 }
 
 // Withdraw은 Command를 받아서 처리
-func (s *AccountService) Withdraw(ctx context.Context, cmd domain.WithdrawCommand) error {
+func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.WithdrawCommand) error {
 	ctx, err := s.txManager.Begin(ctx)
 	if err != nil {
 		return err
