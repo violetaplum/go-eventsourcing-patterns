@@ -11,8 +11,9 @@ type AccountQueryService struct {
 }
 
 func NewAccountQueryService(
+	accountStore domain.AccountStore,
 	eventStore domain.EventStore,
-	accountStore domain.AccountStore) *AccountQueryService {
+) *AccountQueryService {
 	return &AccountQueryService{
 		eventStore:   eventStore,
 		accountStore: accountStore,
