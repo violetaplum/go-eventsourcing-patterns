@@ -28,8 +28,6 @@ func main() {
 	accountStore := store.NewAccountStore(db)
 	eventStore := store.NewEventStore(db)
 
-	//eventPublisher domain.EventPublisher,
-	//	txManager domain.TransactionManager,
 	commandService := command.NewAccountCommandService(accountStore, eventStore)
 	queryService := query.NewAccountQueryService(accountStore, eventStore)
 
