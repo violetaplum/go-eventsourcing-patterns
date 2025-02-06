@@ -1,4 +1,4 @@
-package kafka
+package infraKafka
 
 import (
 	"fmt"

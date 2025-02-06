@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-eventsourcing-patterns/application/command"
+	appCommand "go-eventsourcing-patterns/application/command"
 	"go-eventsourcing-patterns/application/query"
 	"go-eventsourcing-patterns/domain"
+	infraKafka "go-eventsourcing-patterns/infrastructure/kafka"
 	store "go-eventsourcing-patterns/infrastructure/persistence/postgres"
 	"go-eventsourcing-patterns/interface/http"
 	"log"
+	"os"
 )
 
 func main() {
@@ -26,9 +28,21 @@ func main() {
 	}
 
 	accountStore := store.NewAccountStore(db)
-	eventStore := store.NewEventStore(db)
 
-	commandService := command.NewAccountCommandService(accountStore, eventStore)
+	brokers := os.Getenv("KAFKA_BROKERS")
+	topic := os.Getenv("KAFKA_TOPIC")
+
+	if brokers == "" || topic == "" {
+		log.Fatalf("Empty kafka info")
+	}
+
+	eventPublisher, err := infraKafka.NewEventPublisher(brokers, topic)
+	if err != nil {
+		log.Fatalf("Failed to create event publisher: %v", err)
+	}
+
+	eventStore := store.NewEventStore(db)
+	commandService := appCommand.NewAccountCommandService(accountStore, eventStore, eventPublisher, db)
 	queryService := query.NewAccountQueryService(accountStore, eventStore)
 
 	accountHandler := http.NewAccountHandler(commandService, queryService)

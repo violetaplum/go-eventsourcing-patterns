@@ -15,12 +15,8 @@ type AccountCommandService struct {
 	txManager      domain.TransactionManager
 }
 
-func NewAccountCommandService(
-	accountStore domain.AccountStore,
-	eventStore domain.EventStore,
-	eventPublisher domain.EventPublisher,
-	txManager domain.TransactionManager,
-) *AccountCommandService {
+func NewAccountCommandService(accountStore domain.AccountStore, eventStore domain.EventStore,
+	eventPublisher domain.EventPublisher, txManager domain.TransactionManager) *AccountCommandService {
 	return &AccountCommandService{
 		accountStore:   accountStore,
 		eventStore:     eventStore,

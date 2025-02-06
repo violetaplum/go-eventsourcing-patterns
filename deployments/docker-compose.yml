@@ -16,7 +16,7 @@ services:
       KAFKA_NODE_ID: 1 # 노드 ID
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
 
-      # 리스너 관련 설정
+      # 리스너 관련 설정 -> broker
       KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
     
@@ -28,6 +28,17 @@ services:
       CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A==' # 클러스터 식별을 위한 UUID
     ports:
       - "9092:9092"
+    command: >
+      sh -c "
+        /etc/confluent/docker/run &
+        sleep 5 &&
+        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic account-events &&
+        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic audit-logs &&
+        wait
+      "
+
+      
+      
 
   app:
     build:
@@ -39,3 +50,4 @@ services:
     environment:
       DB_HOST: postgres
       KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC: account-events
