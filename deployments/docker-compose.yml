@@ -30,19 +30,31 @@ services:
       - "9092:9092"
     command: >
       sh -c "
+      # Kafka 서버 시작
         /etc/confluent/docker/run &
-        sleep 5 &&
-        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic account-events &&
-        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic audit-logs &&
-        wait
+      
+      # Kafka가 완전히 시작될 때까지 대기
+      MAX_TRIES=10
+      TRIES=0
+      while [ $$TRIES -lt $$MAX_TRIES ]; do
+        kafka-topics --bootstrap-server kafka:9092 --list && break
+        echo 'Waiting for Kafka to be ready...'
+        sleep 10
+        TRIES=$$((TRIES+1))
+      done
+      
+      # 토픽 생성
+      kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic account-events
+      kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic audit-logs
+      
+      # 메인 프로세스 대기
+      wait
       "
 
-      
-      
 
   app:
     build:
-      context: .
+      context: ..
       dockerfile: deployments/app/Dockerfile
     depends_on:
       - postgres
