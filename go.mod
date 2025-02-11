@@ -1,6 +1,6 @@
 module go-eventsourcing-patterns
 
-go 1.23.2
+go 1.22
 
 require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.8.0

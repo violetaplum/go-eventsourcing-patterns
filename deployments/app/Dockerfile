@@ -1,20 +1,24 @@
-FROM golang:1.23.2-alpine
+FROM golang:1.22-alpine
 
 WORKDIR /app
 
-# Kafka 클라이언트 라이브러리 빌드에 필요한 의존성 추가
 RUN apk add --no-cache \
     git \
     librdkafka-dev \
     pkgconfig \
     build-base \
-    bash
+    bash \
+    gcc \
+    musl-dev \
+    linux-headers \
+    libc-dev
 
 COPY . .
 
 RUN go mod download
 
-RUN go build -o main ./cmd/main.go
+# CGO_ENABLED=1을 명시적으로 설정하고, 빌드 시 추가 플래그 사용
+RUN CGO_ENABLED=1 GOOS=linux go build -tags musl -o main ./cmd/main.go
 
 EXPOSE 8080
 
