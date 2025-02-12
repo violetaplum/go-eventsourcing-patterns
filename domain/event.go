@@ -35,10 +35,24 @@ type EventBus interface {
 	Publish(ctx context.Context, event Event) error
 }
 
+type EventStore interface {
+	Save(ctx context.Context, accountId string, events []Event) error
+	Load(ctx context.Context, accountId string) ([]Event, error)
+}
+
 // Event 관련 구조체들 추가
 type AccountCreatedEvent struct {
-	AccountId string
-	CreatedAt time.Time
+	ID          uint      `gorm:"column:id"`
+	AccountId   string    `gorm:"column:account_id"`
+	AggregateID string    `gorm:"column:aggregate_id"`
+	EventType   string    `gorm:"column:event_type"`
+	Amount      int64     `gorm:"-"`
+	EventData   []byte    `gorm:"column:event_data"`
+	CreatedAt   time.Time `gorm:"column:created_at"`
+}
+
+func (AccountCreatedEvent) TableName() string {
+	return "events"
 }
 
 type MoneyDepositedEvent struct {
@@ -47,10 +61,18 @@ type MoneyDepositedEvent struct {
 	CreatedAt time.Time
 }
 
+func (MoneyDepositedEvent) TableName() string {
+	return "events"
+}
+
 type MoneyWithdrawnEvent struct {
 	AccountId string
 	Amount    int64
 	CreatedAt time.Time
+}
+
+func (MoneyWithdrawnEvent) TableName() string {
+	return "events"
 }
 
 // Event 인터페이스 구현
@@ -71,8 +93,3 @@ func (e MoneyWithdrawnEvent) GetEventType() string    { return string(MoneyWithd
 func (e MoneyWithdrawnEvent) GetVersion() int         { return 1 }
 func (e MoneyWithdrawnEvent) GetCreatedAt() time.Time { return e.CreatedAt }
 func (e MoneyWithdrawnEvent) GetData() interface{}    { return e }
-
-type EventStore interface {
-	Save(ctx context.Context, accountId string, events []Event) error
-	Load(ctx context.Context, accountId string) ([]Event, error)
-}

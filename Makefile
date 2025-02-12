@@ -20,6 +20,22 @@ up: ## 컨테이너 실행
 down: ## 컨테이너 중지, 볼륨삭제
 	docker-compose -f $(DOCKER_COMPOSE_FILE) down -v
 
+# 기본 테스트 실행
+test:
+	go test ./... -count=1
 
+# 상세한 테스트 출력
+test-verbose:
+	go test ./... -v -count=1
+
+# 테스트 커버리지 확인
+test-converage:
+	go test ./... -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+# 테승트 관련 파일 정리
+clean:
+	rm -f coverage.out coverage.html
 
 

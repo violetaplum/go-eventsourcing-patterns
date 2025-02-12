@@ -106,7 +106,26 @@ func (h *AccountHandler) ListAccounts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, accounts)
+	res := map[string]interface{}{}
+
+	if len(accounts) == 0 {
+		res["list"] = []string{}
+	} else {
+		res["list"] = accounts
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *AccountHandler) GetHealthCheck(c *gin.Context) {
+	if h == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "un healthy"})
+	}
+
+	res := map[string]interface{}{
+		"status": "ok",
+	}
+	c.JSON(http.StatusOK, res)
 }
 
 // SetupRoutes Gin 라우터 설정
@@ -118,5 +137,6 @@ func (h *AccountHandler) SetupRoutes(router *gin.Engine) {
 		v1.GET("/accounts/:id", h.GetAccount)
 		v1.POST("/accounts/:id/deposit", h.Deposit)
 		v1.POST("/accounts/:id/withdraw", h.Withdraw)
+		v1.GET("/_healthz", h.GetHealthCheck)
 	}
 }

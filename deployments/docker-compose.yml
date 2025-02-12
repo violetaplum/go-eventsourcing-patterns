@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d eventstore"]
       interval: 5s
@@ -71,3 +73,6 @@ services:
       DB_HOST: postgres
       KAFKA_BROKERS: kafka:9092
       KAFKA_TOPIC: account-events
+    ports:
+      - "8080:8080"
+

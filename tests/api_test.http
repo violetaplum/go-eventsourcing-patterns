@@ -1,0 +1,38 @@
+### 환경 변수 설정
+@host = http://localhost:8080
+@accountId = 1 # 테스트할 계좌 ID
+
+### app 서버 헬스체크
+GET {{host}}/v1/_healthz
+Content-Type: application/json
+
+### 새 계좌 생성
+POST {{host}}/v1/accounts
+Content-Type: application/json
+
+{
+  "name": "test_user_1",
+  "initial_balance": 10000
+}
+
+### 전체 계좌 목록 조회
+GET {{host}}/v1/accounts
+
+### 특정 계좌 조회
+GET {{host}}/v1/accounts/{{accountId}}
+
+### 입금
+POST {{host}}/v1/accounts/{{accountId}}/deposit
+Content-Type: application/json
+
+{
+  "amount": 5000
+}
+
+### 출금
+POST {{host}}/v1/accounts/{{accountId}}/withdraw
+Content-Type: application/json
+
+{
+  "amount": 3000
+}
