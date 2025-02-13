@@ -11,11 +11,17 @@ type Account struct {
 	Balance   int64     `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	UserName  string    `json:"user_name"`
+}
+
+func (Account) TableName() string {
+	return "accounts"
 }
 
 // Command 구조체들
 type CreateAccountCommand struct {
 	InitialBalance int64
+	UserName       string
 }
 
 type DepositCommand struct {
@@ -30,7 +36,8 @@ type WithdrawCommand struct {
 
 // HTTP 요청/응답을 위한 DTO 구조체들
 type CreateAccountRequest struct {
-	InitialBalance int64 `json:"initial_balance"`
+	InitialBalance int64  `json:"initial_balance" form:"initial_balance"`
+	UserName       string `json:"user_name" form:"user_name"`
 }
 
 type CreateAccountResponse struct {
@@ -40,11 +47,17 @@ type CreateAccountResponse struct {
 }
 
 type DepositRequest struct {
-	Amount int64 `json:"amount"`
+	Amount    int64  `json:"amount" form:"amount"`
+	AccountID string `json:"account_id" form:"account_id"`
 }
 
 type WithdrawRequest struct {
-	Amount int64 `json:"amount"`
+	Amount    int64  `json:"amount" form:"amount"`
+	AccountId string `json:"account_id" form:"account_id"`
+}
+
+type GetAccountRequest struct {
+	AccountId string `json:"account_id" form:"account_id"`
 }
 
 type AccountResponse struct {

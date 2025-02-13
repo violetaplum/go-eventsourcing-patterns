@@ -31,7 +31,7 @@ func (r *EventStore) Save(ctx context.Context, accountId string, events []domain
 func (r *EventStore) Load(ctx context.Context, accountId string) ([]domain.Event, error) {
 	var events []domain.Event
 	tx := r.db.db.WithContext(ctx).
-		Where("aggregate_id = ?", accountId).
+		Where("account_id = ?", accountId).
 		Order("version asc").
 		Find(&events)
 

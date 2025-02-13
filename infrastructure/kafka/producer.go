@@ -41,7 +41,7 @@ func (ep *EventPublisher) Publish(ctx context.Context, event domain.Event) error
 			Topic:     &ep.topic,
 			Partition: kafka.PartitionAny, // 카프카가 적절한 파티션 선택
 		},
-		Key:   []byte(event.GetAggregateID()), // 집계 ID 를 키로 사용
+		Key:   []byte(event.GetAccountID()), // 집계 ID 를 키로 사용
 		Value: jsonEvent,
 	}
 
@@ -61,7 +61,7 @@ func (ep *EventPublisher) Publish(ctx context.Context, event domain.Event) error
 		}
 
 		log.Printf("Event published: AccountID=%s, Type=%s",
-			event.GetAggregateID(),
+			event.GetAccountID(),
 			event.GetEventType())
 	}
 	return nil

@@ -14,7 +14,7 @@ const (
 )
 
 type Event interface {
-	GetAggregateID() string
+	GetAccountID() string
 	GetEventType() string
 	GetVersion() int
 	GetCreatedAt() time.Time
@@ -42,13 +42,12 @@ type EventStore interface {
 
 // Event 관련 구조체들 추가
 type AccountCreatedEvent struct {
-	ID          uint      `gorm:"column:id"`
-	AccountId   string    `gorm:"column:account_id"`
-	AggregateID string    `gorm:"column:aggregate_id"`
-	EventType   string    `gorm:"column:event_type"`
-	Amount      int64     `gorm:"-"`
-	EventData   []byte    `gorm:"column:event_data"`
-	CreatedAt   time.Time `gorm:"column:created_at"`
+	ID        string    `gorm:"column:id"`
+	AccountId string    `gorm:"column:account_id"`
+	EventType string    `gorm:"column:event_type"`
+	Amount    int64     `gorm:"-"`
+	EventData []byte    `gorm:"column:event_data"`
+	CreatedAt time.Time `gorm:"column:created_at"`
 }
 
 func (AccountCreatedEvent) TableName() string {
@@ -56,9 +55,11 @@ func (AccountCreatedEvent) TableName() string {
 }
 
 type MoneyDepositedEvent struct {
-	AccountId string
-	Amount    int64
-	CreatedAt time.Time
+	AccountId string    `gorm:"column:account_id"`
+	Amount    int64     `gorm:"column:amount"`
+	EventType string    `gorm:"column:event_type"`
+	EventData []byte    `gorm:"column:event_data"`
+	CreatedAt time.Time `gorm:"column:created_at"`
 }
 
 func (MoneyDepositedEvent) TableName() string {
@@ -66,9 +67,11 @@ func (MoneyDepositedEvent) TableName() string {
 }
 
 type MoneyWithdrawnEvent struct {
-	AccountId string
-	Amount    int64
-	CreatedAt time.Time
+	AccountId string    `gorm:"column:account_id"`
+	Amount    int64     `gorm:"column:amount"`
+	EventType string    `gorm:"column:event_type"`
+	EventData []byte    `gorm:"column:event_data"`
+	CreatedAt time.Time `gorm:"column:created"`
 }
 
 func (MoneyWithdrawnEvent) TableName() string {
@@ -76,19 +79,19 @@ func (MoneyWithdrawnEvent) TableName() string {
 }
 
 // Event 인터페이스 구현
-func (e AccountCreatedEvent) GetAggregateID() string  { return e.AccountId }
+func (e AccountCreatedEvent) GetAccountID() string    { return e.AccountId }
 func (e AccountCreatedEvent) GetEventType() string    { return string(AccountCreated) }
 func (e AccountCreatedEvent) GetVersion() int         { return 1 }
 func (e AccountCreatedEvent) GetCreatedAt() time.Time { return e.CreatedAt }
 func (e AccountCreatedEvent) GetData() interface{}    { return e }
 
-func (e MoneyDepositedEvent) GetAggregateID() string  { return e.AccountId }
+func (e MoneyDepositedEvent) GetAccountID() string    { return e.AccountId }
 func (e MoneyDepositedEvent) GetEventType() string    { return string(MoneyDeposited) }
 func (e MoneyDepositedEvent) GetVersion() int         { return 1 }
 func (e MoneyDepositedEvent) GetCreatedAt() time.Time { return e.CreatedAt }
 func (e MoneyDepositedEvent) GetData() interface{}    { return e }
 
-func (e MoneyWithdrawnEvent) GetAggregateID() string  { return e.AccountId }
+func (e MoneyWithdrawnEvent) GetAccountID() string    { return e.AccountId }
 func (e MoneyWithdrawnEvent) GetEventType() string    { return string(MoneyWithdrawn) }
 func (e MoneyWithdrawnEvent) GetVersion() int         { return 1 }
 func (e MoneyWithdrawnEvent) GetCreatedAt() time.Time { return e.CreatedAt }

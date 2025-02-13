@@ -3,6 +3,7 @@ package command
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/google/uuid"
 	"go-eventsourcing-patterns/domain"
 	"time"
@@ -33,20 +34,34 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 	}
 	defer s.txManager.Rollback(ctx)
 
+	accountId := uuid.New().String()
 	account := &domain.Account{
-		ID:        uuid.New().String(),
+		ID:        accountId,
 		Balance:   cmd.InitialBalance,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+		UserName:  cmd.UserName,
 	}
 
 	if err := s.accountStore.Create(ctx, account); err != nil {
 		return err
 	}
 
+	eventData := map[string]interface{}{
+		"account_id":      accountId,
+		"initial_balance": 1000,
+		"user_name":       cmd.UserName,
+	}
+	byteData, err := json.Marshal(eventData)
+	if err != nil {
+		return err
+	}
+
 	event := domain.AccountCreatedEvent{
 		AccountId: account.ID,
 		CreatedAt: time.Now(),
+		EventType: string(domain.AccountCreated),
+		EventData: byteData,
 	}
 
 	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {
@@ -73,6 +88,8 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 		return err
 	}
 
+	originalBalance := account.Balance
+
 	account.Balance += cmd.Amount
 	account.UpdatedAt = time.Now()
 
@@ -80,10 +97,22 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 		return err
 	}
 
+	eventData := map[string]interface{}{
+		"account_id":       cmd.AccountID,
+		"amount":           cmd.Amount,
+		"original_balance": originalBalance,
+	}
+	byteData, err := json.Marshal(eventData)
+	if err != nil {
+		return err
+	}
+
 	event := domain.MoneyDepositedEvent{
 		AccountId: account.ID,
 		Amount:    cmd.Amount,
 		CreatedAt: time.Now(),
+		EventData: byteData,
+		EventType: string(domain.MoneyDeposited),
 	}
 
 	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {
@@ -110,6 +139,8 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 		return err
 	}
 
+	originalBalance := account.Balance
+
 	if account.Balance < cmd.Amount {
 		return domain.ErrInsufficientBalance
 	}
@@ -121,10 +152,22 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 		return err
 	}
 
+	eventData := map[string]interface{}{
+		"account_id":       cmd.AccountID,
+		"amount":           cmd.Amount,
+		"original_balance": originalBalance,
+	}
+	byteData, err := json.Marshal(eventData)
+	if err != nil {
+		return err
+	}
+
 	event := domain.MoneyWithdrawnEvent{
 		AccountId: account.ID,
 		Amount:    cmd.Amount,
 		CreatedAt: time.Now(),
+		EventType: string(domain.MoneyWithdrawn),
+		EventData: byteData,
 	}
 
 	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {

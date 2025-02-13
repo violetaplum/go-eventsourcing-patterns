@@ -26,37 +26,43 @@ This project focuses on:
 
 ```
 .
+├── Makefile
 ├── README.md
+├── application
+│   ├── command
+│   │   └── account_service.go
+│   └── query
+│       └── account_service.go
 ├── cmd
-│   └── api
-│       └── main.go
-├── domain                    
-│   ├── aggregate            
-│   │   └── account.go      
-│   ├── event              
-│   │   └── event.go       
-│   └── vo                  
-│       └── money.go        
-├── application             
-│   ├── command            
-│   │   └── account_command.go
-│   └── query              
-│       └── account_query.go
-├── infrastructure         
-│   └── persistence
-│       └── postgres
-│           ├── account_repository.go
-│           └── event_store.go
-├── interface             
-│   └── http
-│       └── account_handler.go
-├── deployments           # Docker 관련 설정
-│   ├── docker-compose.yml
+│   └── main.go
+├── deployments
 │   ├── app
 │   │   └── Dockerfile
+│   ├── docker-compose.yml
 │   └── postgres
 │       └── init.sql
+├── domain
+│   ├── account.go
+│   ├── config.go
+│   ├── errors.go
+│   ├── event.go
+│   └── transaction.go
+├── go.mod
+├── go.sum
+├── infrastructure
+│   ├── kafka
+│   │   ├── consumer.go
+│   │   └── producer.go
+│   └── persistence
+│       └── postgres
+│           ├── account_store.go
+│           ├── connection.go
+│           └── event_store.go
+├── interface
+│   └── http
+│       └── account_handler.go
 └── tests
+    └── api_test.http
 ```
 
 ## 🔥 Implementation Features

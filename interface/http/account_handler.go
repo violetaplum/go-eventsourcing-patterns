@@ -26,13 +26,14 @@ func NewAccountHandler(
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
 	var req domain.CreateAccountRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	cmd := domain.CreateAccountCommand{
 		InitialBalance: req.InitialBalance,
+		UserName:       req.UserName,
 	}
 
 	if err := h.commandService.CreateAccount(c, cmd); err != nil {
@@ -44,16 +45,14 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 }
 
 func (h *AccountHandler) Deposit(c *gin.Context) {
-	accountID := c.Param("id")
-
 	var req domain.DepositRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	cmd := domain.DepositCommand{
-		AccountID: accountID,
+		AccountID: req.AccountID,
 		Amount:    req.Amount,
 	}
 
@@ -66,16 +65,14 @@ func (h *AccountHandler) Deposit(c *gin.Context) {
 }
 
 func (h *AccountHandler) Withdraw(c *gin.Context) {
-	accountID := c.Param("id")
-
 	var req domain.WithdrawRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	cmd := domain.WithdrawCommand{
-		AccountID: accountID,
+		AccountID: req.AccountId,
 		Amount:    req.Amount,
 	}
 
@@ -88,9 +85,12 @@ func (h *AccountHandler) Withdraw(c *gin.Context) {
 }
 
 func (h *AccountHandler) GetAccount(c *gin.Context) {
-	accountID := c.Param("id")
-
-	account, err := h.queryService.GetAccountByID(c, accountID)
+	req := domain.GetAccountRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	account, err := h.queryService.GetAccountByID(c, req.AccountId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -132,11 +132,11 @@ func (h *AccountHandler) GetHealthCheck(c *gin.Context) {
 func (h *AccountHandler) SetupRoutes(router *gin.Engine) {
 	v1 := router.Group("/v1")
 	{
-		v1.POST("/accounts", h.CreateAccount)
-		v1.GET("/accounts", h.ListAccounts)
-		v1.GET("/accounts/:id", h.GetAccount)
-		v1.POST("/accounts/:id/deposit", h.Deposit)
-		v1.POST("/accounts/:id/withdraw", h.Withdraw)
+		v1.POST("/account.create", h.CreateAccount)
+		v1.GET("/account.list", h.ListAccounts)
+		v1.GET("/account.info", h.GetAccount)
+		v1.POST("/account.deposit", h.Deposit)
+		v1.POST("/account.withdraw", h.Withdraw)
 		v1.GET("/_healthz", h.GetHealthCheck)
 	}
 }
