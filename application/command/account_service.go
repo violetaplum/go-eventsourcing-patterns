@@ -58,7 +58,7 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 	}
 
 	event := domain.AccountCreatedEvent{
-		AccountId: account.ID,
+		AccountID: account.ID,
 		CreatedAt: time.Now(),
 		EventType: string(domain.AccountCreated),
 		EventData: byteData,
