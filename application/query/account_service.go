@@ -56,6 +56,7 @@ func (s *AccountQueryService) GetAccountByID(ctx context.Context, accountID stri
 		Balance:          account.Balance,
 		CreatedAt:        account.CreatedAt,
 		UpdatedAt:        account.UpdatedAt,
+		UserName:         account.UserName,
 		TotalDeposits:    totalDeposits,
 		TotalWithdrawals: totalWithdrawals,
 		TransactionCount: transactionCount,
@@ -80,6 +81,7 @@ func (s *AccountQueryService) ListAccounts(ctx context.Context) ([]domain.Accoun
 				Balance:   account.Balance,
 				CreatedAt: account.CreatedAt,
 				UpdatedAt: account.UpdatedAt,
+				UserName:  account.UserName,
 			})
 			continue
 		}
@@ -105,6 +107,7 @@ func (s *AccountQueryService) ListAccounts(ctx context.Context) ([]domain.Accoun
 			Balance:          account.Balance,
 			CreatedAt:        account.CreatedAt,
 			UpdatedAt:        account.UpdatedAt,
+			UserName:         account.UserName,
 			TotalDeposits:    totalDeposits,
 			TotalWithdrawals: totalWithdrawals,
 			TransactionCount: transactionCount,

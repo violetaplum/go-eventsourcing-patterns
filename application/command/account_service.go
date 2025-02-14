@@ -4,7 +4,6 @@ package command
 import (
 	"context"
 	"encoding/json"
-	"github.com/google/uuid"
 	"go-eventsourcing-patterns/domain"
 	"time"
 )
@@ -34,13 +33,12 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 	}
 	defer s.txManager.Rollback(ctx)
 
-	accountId := uuid.New().String()
 	account := &domain.Account{
-		ID:        accountId,
+		ID:        cmd.AccountId,
 		Balance:   cmd.InitialBalance,
+		UserName:  cmd.UserName,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserName:  cmd.UserName,
 	}
 
 	if err := s.accountStore.Create(ctx, account); err != nil {
@@ -48,9 +46,9 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 	}
 
 	eventData := map[string]interface{}{
-		"account_id":      accountId,
-		"initial_balance": 1000,
+		"account_id":      cmd.AccountId,
 		"user_name":       cmd.UserName,
+		"initial_balance": 1000,
 	}
 	byteData, err := json.Marshal(eventData)
 	if err != nil {
@@ -58,7 +56,7 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 	}
 
 	event := domain.AccountCreatedEvent{
-		AccountID: account.ID,
+		AccountId: account.ID,
 		CreatedAt: time.Now(),
 		EventType: string(domain.AccountCreated),
 		EventData: byteData,

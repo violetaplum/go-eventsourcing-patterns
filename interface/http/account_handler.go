@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/google/uuid"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,9 +32,12 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
+	accountId := uuid.New().String()
+
 	cmd := domain.CreateAccountCommand{
 		InitialBalance: req.InitialBalance,
 		UserName:       req.UserName,
+		AccountId:      accountId,
 	}
 
 	if err := h.commandService.CreateAccount(c, cmd); err != nil {
@@ -41,7 +45,13 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	account, err := h.queryService.GetAccountByID(c, accountId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHandler) Deposit(c *gin.Context) {

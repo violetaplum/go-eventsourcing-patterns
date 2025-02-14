@@ -22,6 +22,7 @@ func (Account) TableName() string {
 type CreateAccountCommand struct {
 	InitialBalance int64
 	UserName       string
+	AccountId      string
 }
 
 type DepositCommand struct {
@@ -65,6 +66,7 @@ type AccountResponse struct {
 	Balance   int64     `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	UserName  string    `json:"user_name"`
 
 	TotalDeposits    int64 `json:"total_deposits"`
 	TotalWithdrawals int64 `json:"total_withdrawals"`

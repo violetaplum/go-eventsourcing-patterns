@@ -26,6 +26,10 @@ type EventPublisher interface {
 	PublishAll(ctx context.Context, events []Event) error
 }
 
+type EventConsumer interface {
+	ProcessEvent(ctx context.Context, event Event) error
+}
+
 type EventHandler interface {
 	Handle(ctx context.Context, event Event) error
 }
