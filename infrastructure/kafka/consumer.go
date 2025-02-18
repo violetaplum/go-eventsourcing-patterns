@@ -1,6 +1,7 @@
 package infraKafka
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -9,9 +10,10 @@ import (
 )
 
 type EventConsumer struct {
-	consumer *kafka.Consumer
-	topic    string
-	//eventStore domain.EventStore
+	consumer  *kafka.Consumer
+	topic     string
+	handlers  map[string]domain.EventHandler
+	isRunning bool
 }
 
 func NewEventConsumer(brokers string, groupID string, topic string) (*EventConsumer, error) {
@@ -28,59 +30,71 @@ func NewEventConsumer(brokers string, groupID string, topic string) (*EventConsu
 		return nil, fmt.Errorf("failed to create consumer: %v", err)
 	}
 
-	err = c.SubscribeTopics([]string{topic}, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe to topic: %v", err)
-	}
 	return &EventConsumer{
-		consumer: c,
-		topic:    topic,
-		//eventStore: eventStore,
+		consumer:  c,
+		topic:     topic,
+		handlers:  make(map[string]domain.EventHandler),
+		isRunning: false,
 	}, nil
 }
 
-// Subscribe 메서드 추가 - 이벤트 처리를 위한 핸들러 함수를 받음
-func (ec *EventConsumer) Subscribe(handler func(event domain.Event) error) error {
-	err := ec.consumer.Subscribe(ec.topic, nil)
-	if err != nil {
+func (ec *EventConsumer) RegisterHandler(eventType string, handler domain.EventHandler) {
+	ec.handlers[eventType] = handler
+}
+
+func (ec *EventConsumer) Subscribe(ctx context.Context) error {
+	if err := ec.consumer.SubscribeTopics([]string{ec.topic}, nil); err != nil {
 		return fmt.Errorf("failed to subscribe to topic %s: %v", ec.topic, err)
 	}
 
-	// 이벤트 처리 루프
-	for {
-		msg, err := ec.consumer.ReadMessage(-1) // -1은 무한 대기
-		if err != nil {
-			log.Printf("Error reading message: %v", err)
-			continue
-		}
+	ec.isRunning = true
+	go ec.consumeMessages(ctx)
+	return nil
+}
 
-		var event domain.Event
-		if err := json.Unmarshal(msg.Value, &event); err != nil {
-			log.Printf("Error unmarshaling event: %v", err)
-			continue
-		}
+func (ec *EventConsumer) consumeMessages(ctx context.Context) {
+	for ec.isRunning {
+		select {
+		case <-ctx.Done(): // 컨텍스트 취소됐을때의 처리
+			ec.isRunning = false
+			return
+		default:
+			// 일반적 메세지 처리
+			msg, err := ec.consumer.ReadMessage(100)
+			if err != nil {
+				if !err.(kafka.Error).IsTimeout() {
+					log.Printf("Error reading message: %v", err)
+				}
+				continue
+			}
 
-		if err := handler(event); err != nil {
-			log.Printf("Error handling event: %v", err)
-			// 에러 처리 정책에 따라 추가 로직 구현 가능
-			// 예: Dead Letter Queue로 보내기, 재시도 등
+			if err := ec.processMessage(ctx, msg); err != nil {
+				log.Printf("Error processing message: %v", err)
+			}
+
 		}
 	}
 }
 
-func (ec *EventConsumer) Close() error {
-	return ec.consumer.Close()
+func (ec *EventConsumer) processMessage(ctx context.Context, msg *kafka.Message) error {
+	var event domain.Event
+	if err := json.Unmarshal(msg.Value, &event); err != nil {
+		return fmt.Errorf("failed to unmarshal event: %v", err)
+	}
+
+	eventType := event.GetEventType()
+	handler, exists := ec.handlers[eventType]
+	if !exists {
+		return fmt.Errorf("no handler registered for event type: %s", eventType)
+	}
+
+	if err := handler.Handle(ctx, event); err != nil {
+		return fmt.Errorf("handler failed for event type: %v", eventType)
+	}
+	return nil
 }
 
-//func (e *EventConsumer) ProcessEvent(ctx context.Context, event domain.Event) error {
-//	switch event.GetEventType() {
-//	case string(domain.AccountCreated):
-//
-//	case string(domain.MoneyDeposited):
-//	case string(domain.MoneyWithdrawn):
-//	default:
-//		return fmt.Errorf("unknown event type: %v", event)
-//	}
-//
-//	return nil
-//}
+func (ec *EventConsumer) Close() error {
+	ec.isRunning = false
+	return ec.consumer.Close()
+}

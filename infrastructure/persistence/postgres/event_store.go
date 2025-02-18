@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"go-eventsourcing-patterns/domain"
 )
 
@@ -17,11 +18,11 @@ func NewEventStore(db *PostgresDB) *EventStore {
 
 // Save 이벤트들을 저장
 func (r *EventStore) Save(ctx context.Context, accountId string, events []domain.Event) error {
+	fmt.Println("Event Save 까지는 잘 들어왔음 ///////// ", events)
 	tx := r.db.db.WithContext(ctx)
 	for _, event := range events {
-		result := tx.Create(event)
-		if result.Error != nil {
-			return result.Error
+		if err := tx.Create(&event).Error; err != nil {
+			return fmt.Errorf("failed to save AccountCreatedEvent: %v", err)
 		}
 	}
 	return nil
@@ -32,7 +33,7 @@ func (r *EventStore) Load(ctx context.Context, accountId string) ([]domain.Event
 	var events []domain.Event
 	tx := r.db.db.WithContext(ctx).
 		Where("account_id = ?", accountId).
-		Order("version asc").
+		Order("created_at desc").
 		Find(&events)
 
 	if tx.Error != nil {

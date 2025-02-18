@@ -4,6 +4,7 @@ package command
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"go-eventsourcing-patterns/domain"
 	"time"
 )
@@ -55,15 +56,11 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 		return err
 	}
 
-	event := domain.AccountCreatedEvent{
-		AccountId: account.ID,
+	event := domain.Event{
+		AccountID: account.ID,
 		CreatedAt: time.Now(),
 		EventType: string(domain.AccountCreated),
 		EventData: byteData,
-	}
-
-	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {
-		return err
 	}
 
 	if err := s.eventPublisher.Publish(ctx, event); err != nil {
@@ -94,8 +91,9 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 	if err := s.accountStore.Update(ctx, account); err != nil {
 		return err
 	}
-
+	eventId := uuid.New().String()
 	eventData := map[string]interface{}{
+		"id":               eventId,
 		"account_id":       cmd.AccountID,
 		"amount":           cmd.Amount,
 		"original_balance": originalBalance,
@@ -105,16 +103,13 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 		return err
 	}
 
-	event := domain.MoneyDepositedEvent{
-		AccountId: account.ID,
+	event := domain.Event{
+		ID:        eventId,
+		AccountID: account.ID,
 		Amount:    cmd.Amount,
 		CreatedAt: time.Now(),
 		EventData: byteData,
 		EventType: string(domain.MoneyDeposited),
-	}
-
-	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {
-		return err
 	}
 
 	if err := s.eventPublisher.Publish(ctx, event); err != nil {
@@ -150,7 +145,10 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 		return err
 	}
 
+	eventId := uuid.New().String()
+
 	eventData := map[string]interface{}{
+		"id":               eventId,
 		"account_id":       cmd.AccountID,
 		"amount":           cmd.Amount,
 		"original_balance": originalBalance,
@@ -160,16 +158,13 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 		return err
 	}
 
-	event := domain.MoneyWithdrawnEvent{
-		AccountId: account.ID,
+	event := domain.Event{
+		ID:        eventId,
+		AccountID: account.ID,
 		Amount:    cmd.Amount,
 		CreatedAt: time.Now(),
 		EventType: string(domain.MoneyWithdrawn),
 		EventData: byteData,
-	}
-
-	if err := s.eventStore.Save(ctx, account.ID, []domain.Event{event}); err != nil {
-		return err
 	}
 
 	if err := s.eventPublisher.Publish(ctx, event); err != nil {

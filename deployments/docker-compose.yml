@@ -35,6 +35,15 @@ services:
       CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A==' # 클러스터 식별을 위한 UUID
     ports:
       - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --list"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
     command: >
       sh -c '
         # Kafka 서버 시작
@@ -88,7 +97,7 @@ services:
       postgres:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
       account-api:
         condition: service_started
     environment:
@@ -97,5 +106,5 @@ services:
       DB_USER: user
       DB_PASSWORD: password
       KAFKA_BROKERS: kafka:9092
-      KAFKA_TOPIC: account-events
+      KAFKA_TOPIC: account-events    # account-events 토픽으로 설정되어 있는지 확인
       KAFKA_GROUP_ID: event-processor-group

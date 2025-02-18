@@ -69,7 +69,6 @@ This project focuses on:
 
 ### 📊 Event Sourcing
 - Multiple event store implementations
-- Event versioning
 - Schema evolution
 - Snapshots
 - Optimistic concurrency control

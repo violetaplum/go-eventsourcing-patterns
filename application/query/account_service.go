@@ -37,12 +37,12 @@ func (s *AccountQueryService) GetAccountByID(ctx context.Context, accountID stri
 	transactionCount := 0
 
 	for _, event := range events {
-		switch e := event.(type) {
-		case domain.MoneyDepositedEvent:
-			totalDeposits += e.Amount
+		switch event.GetEventType() {
+		case string(domain.MoneyDeposited):
+			totalDeposits += event.Amount
 			transactionCount++
-		case domain.MoneyWithdrawnEvent:
-			totalWithdrawals += e.Amount
+		case string(domain.MoneyWithdrawn):
+			totalWithdrawals += event.Amount
 			transactionCount++
 		}
 	}
@@ -92,12 +92,12 @@ func (s *AccountQueryService) ListAccounts(ctx context.Context) ([]domain.Accoun
 		transactionCount := 0
 
 		for _, event := range events {
-			switch e := event.(type) {
-			case domain.MoneyDepositedEvent:
-				totalDeposits += e.Amount
+			switch event.GetEventType() {
+			case string(domain.MoneyDeposited):
+				totalDeposits += event.Amount
 				transactionCount++
-			case domain.MoneyWithdrawnEvent:
-				totalWithdrawals += e.Amount
+			case string(domain.MoneyWithdrawn):
+				totalWithdrawals += event.Amount
 				transactionCount++
 			}
 		}
