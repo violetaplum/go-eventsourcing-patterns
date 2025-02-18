@@ -73,9 +73,10 @@ type AccountResponse struct {
 	TransactionCount int   `json:"transaction_count"`
 }
 
-//go:generate mockgen -source=account.go -destination=../mock/mock_account.go -package=mock
-
 // Account 서비스 인터페이스
+
+//go:generate mockgen -source=domain/account.go -destination=domain/mock/mock_account.go -package=mock
+
 type AccountCommandService interface {
 	CreateAccount(ctx context.Context, cmd CreateAccountCommand) error
 	Deposit(ctx context.Context, cmd DepositCommand) error

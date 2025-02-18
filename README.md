@@ -34,7 +34,10 @@ This project focuses on:
 │   └── query
 │       └── account_service.go
 ├── cmd
-│   └── main.go
+│   ├── account
+│   │   └── main.go
+│   └── event
+│       └── main.go
 ├── deployments
 │   ├── app
 │   │   └── Dockerfile
@@ -52,6 +55,7 @@ This project focuses on:
 ├── infrastructure
 │   ├── kafka
 │   │   ├── consumer.go
+│   │   ├── event_handler.go
 │   │   └── producer.go
 │   └── persistence
 │       └── postgres
@@ -103,9 +107,6 @@ cd go-es-lab
 
 # Start infrastructure
 make docker-up
-
-# Run tests
-make test
 ```
 
 ## 💡 Running Examples
