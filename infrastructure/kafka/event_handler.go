@@ -16,7 +16,6 @@ func NewAccountCreatedHandler(eventStore domain.EventStore) *AccountCreatedHandl
 }
 
 func (h *AccountCreatedHandler) Handle(ctx context.Context, event domain.Event) error {
-	//TODO: 계정 생성 후속 처리
 	if err := h.eventStore.Save(ctx, event.GetAccountID(), []domain.Event{event}); err != nil {
 		return err
 	}
@@ -33,7 +32,6 @@ func NewMoneyDepositHandler(eventStore domain.EventStore) *MoneyDepositHandler {
 }
 
 func (h *MoneyDepositHandler) Handle(ctx context.Context, event domain.Event) error {
-	// TODO: 입금 처리 로직
 	if err := h.eventStore.Save(ctx, event.GetAccountID(), []domain.Event{event}); err != nil {
 		return err
 	}
@@ -50,7 +48,6 @@ func NewMoneyWithdrawHandler(eventStore domain.EventStore) *MoneyWithdrawHandler
 }
 
 func (h *MoneyWithdrawHandler) Handle(ctx context.Context, event domain.Event) error {
-	// TODO: 출금 처리 로직
 	if err := h.eventStore.Save(ctx, event.GetAccountID(), []domain.Event{event}); err != nil {
 		return err
 	}
