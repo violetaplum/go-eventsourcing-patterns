@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-//go:generate mockgen -source=transaction.go -destination=../mock/mock_transaction.go -package=mock
+//go:generate mockgen -source=transaction.go -destination=domain/mock/mock_transaction.go -package=mock
 
 // TransactionManager 인터페이스
 type TransactionManager interface {

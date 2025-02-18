@@ -5,19 +5,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go-eventsourcing-patterns/application/command"
-	"go-eventsourcing-patterns/application/query"
 	"go-eventsourcing-patterns/domain"
 )
 
 type AccountHandler struct {
-	commandService *command.AccountCommandService
-	queryService   *query.AccountQueryService
+	commandService domain.AccountCommandService
+	queryService   domain.AccountQueryService
 }
 
 func NewAccountHandler(
-	commandService *command.AccountCommandService,
-	queryService *query.AccountQueryService,
+	commandService domain.AccountCommandService,
+	queryService domain.AccountQueryService,
 ) *AccountHandler {
 	return &AccountHandler{
 		commandService: commandService,
@@ -39,7 +37,6 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		UserName:       req.UserName,
 		AccountId:      accountId,
 	}
-
 	if err := h.commandService.CreateAccount(c, cmd); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
