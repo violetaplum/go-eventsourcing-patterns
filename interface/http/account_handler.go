@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"net/http"
 
@@ -62,8 +61,6 @@ func (h *AccountHandler) Deposit(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("DepositRequest : ", req.AccountID, req.Amount)
-
 	cmd := domain.DepositCommand{
 		AccountID: req.AccountID,
 		Amount:    req.Amount,
@@ -84,8 +81,6 @@ func (h *AccountHandler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("WithdrawRequest : ", req.AccountId, req.Amount)
-
 	cmd := domain.WithdrawCommand{
 		AccountID: req.AccountId,
 		Amount:    req.Amount,
@@ -105,8 +100,6 @@ func (h *AccountHandler) GetAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	fmt.Println("GetAccount : ", req.AccountId)
 
 	account, err := h.queryService.GetAccountByID(c, req.AccountId)
 	if err != nil {

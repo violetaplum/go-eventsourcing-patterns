@@ -18,7 +18,6 @@ func NewEventStore(db *PostgresDB) *EventStore {
 
 // Save 이벤트들을 저장
 func (r *EventStore) Save(ctx context.Context, accountId string, events []domain.Event) error {
-	fmt.Println("Event Save 까지는 잘 들어왔음 ///////// ", events)
 	tx := r.db.db.WithContext(ctx)
 	for _, event := range events {
 		if err := tx.Create(&event).Error; err != nil {
