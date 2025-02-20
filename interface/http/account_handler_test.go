@@ -15,21 +15,6 @@ import (
 	"testing"
 )
 
-//func setupTestRouter(t *testing.T) (*gin.Engine, *mock.MockAccountCommandService, *mock.MockAccountQueryService) {
-//	gin.SetMode(gin.TestMode)
-//	ctrl := gomock.NewController(t)
-//	mockCommandService := mock.NewMockAccountCommandService(ctrl)
-//	mockQueryService := mock.NewMockAccountQueryService(ctrl)
-//
-//	handler := NewAccountHandler(
-//		mockCommandService,
-//		mockQueryService,
-//	)
-//	router := gin.New()
-//	handler.SetupRoutes(router)
-//	return router, mockCommandService, mockQueryService
-//}
-
 func TestAccountService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
