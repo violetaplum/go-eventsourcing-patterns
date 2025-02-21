@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	router := gin.Default()
 
 	db, err := store.NewPostgresDB(&domain.Config{
 		DBHost:     "postgres", // docker 서비스명
@@ -46,6 +45,8 @@ func main() {
 	queryService := query.NewAccountQueryService(accountStore, eventStore)
 
 	accountHandler := http.NewAccountHandler(commandService, queryService)
+
+	router := gin.Default()
 	accountHandler.SetupRoutes(router)
 
 	router.Run(":8080")

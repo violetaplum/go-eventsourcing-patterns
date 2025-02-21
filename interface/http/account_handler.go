@@ -68,7 +68,13 @@ func (h *AccountHandler) Deposit(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	account, err := h.queryService.GetAccountByID(c, req.AccountID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHandler) Withdraw(c *gin.Context) {
@@ -88,7 +94,13 @@ func (h *AccountHandler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	account, err := h.queryService.GetAccountByID(c, req.AccountId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
 }
 
 func (h *AccountHandler) GetAccount(c *gin.Context) {
