@@ -49,6 +49,8 @@ This project focuses on:
 │   ├── config.go
 │   ├── errors.go
 │   ├── event.go
+│   ├── mock
+│   │   └── mock_account.go
 │   └── transaction.go
 ├── go.mod
 ├── go.sum
@@ -64,9 +66,12 @@ This project focuses on:
 │           └── event_store.go
 ├── interface
 │   └── http
-│       └── account_handler.go
+│       ├── account_handler.go
+│       └── account_handler_test.go
 └── tests
     └── api_test.http
+
+19 directories, 26 files
 ```
 
 ## 🔥 Implementation Features
@@ -102,11 +107,11 @@ make
 ### Development Setup
 ```bash
 # Clone repository
-git clone https://github.com/username/go-es-lab.git
-cd go-es-lab
+git clone https://github.com/violetaplum/go-eventsourcing-patterns.git
+cd go-eventsourcing-patterns
 
 # Start infrastructure
-make docker-up
+make server-up
 ```
 
 ## 💡 Running Examples
@@ -123,8 +128,6 @@ make run-account-example
 # Unit tests
 make test
 
-# Integration tests
-make integration-test
 
 # Benchmark tests
 make bench
@@ -136,7 +139,8 @@ make bench
 2. Implement the pattern
 3. Add tests
 4. Add documentation
-5. Add benchmarks if applicable
+
+[//]: # (5. Add benchmarks if applicable)
 
 ## 🎯 Project Goals
 

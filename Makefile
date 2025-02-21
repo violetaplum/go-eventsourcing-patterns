@@ -10,26 +10,23 @@ help: ## 사용 가능한 명령어 표시
 
 .PHONY: build
 build: ## 도커 이미지 빌드
-	docker-compose -f $(DOCKER_COMPOSE_FILE) build
+	docker compose -f $(DOCKER_COMPOSE_FILE) build
 
 .PHONY: up
-up: ## 컨테이너 실행
-	docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+server-up: ## 컨테이너 실행
+	docker compose -f $(DOCKER_COMPOSE_FILE) up -d
 
 .PHONY: down
-down: ## 컨테이너 중지, 볼륨삭제
-	docker-compose -f $(DOCKER_COMPOSE_FILE) down -v
+server-down: ## 컨테이너 중지, 볼륨삭제
+	docker compose -f $(DOCKER_COMPOSE_FILE) down -v
 
 # 기본 테스트 실행
+.PHONY: test
 test:
-	go test ./... -count=1
-
-# 상세한 테스트 출력
-test-verbose:
-	go test ./... -v -count=1
+	go test -v ./...
 
 # 테스트 커버리지 확인
-test-converage:
+test-coverage:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
