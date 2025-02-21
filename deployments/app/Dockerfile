@@ -17,6 +17,9 @@ COPY . .
 
 RUN go mod download
 
+# http router 테스트 실행
+RUN go test -v ./...
+
 # CGO_ENABLED=1을 명시적으로 설정하고, 빌드 시 추가 플래그 사용
 RUN CGO_ENABLED=1 GOOS=linux go build -tags musl -o account ./cmd/account/main.go
 RUN CGO_ENABLED=1 GOOS=linux go build -tags musl -o event ./cmd/event/main.go
