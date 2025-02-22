@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	appCommand "go-eventsourcing-patterns/application/command"
 	"go-eventsourcing-patterns/application/query"
@@ -8,11 +9,21 @@ import (
 	infraKafka "go-eventsourcing-patterns/infrastructure/kafka"
 	store "go-eventsourcing-patterns/infrastructure/persistence/postgres"
 	"go-eventsourcing-patterns/interface/http"
+	"go-eventsourcing-patterns/interface/telemetry"
 	"log"
 	"os"
 )
 
 func main() {
+
+	ctx := context.Background()
+
+	// OpenTelemetry 초기화
+	shutdown, err := telemetry.InitTracer(ctx, "account-service")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer shutdown()
 
 	db, err := store.NewPostgresDB(&domain.Config{
 		DBHost:     "postgres", // docker 서비스명

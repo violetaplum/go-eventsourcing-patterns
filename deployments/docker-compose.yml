@@ -108,3 +108,23 @@ services:
       KAFKA_BROKERS: kafka:9092
       KAFKA_TOPIC: account-events    # account-events 토픽으로 설정되어 있는지 확인
       KAFKA_GROUP_ID: event-processor-group
+
+
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "8888:8888" # metrics
+      - "8889:8889" # prometheus metrics
+
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686" # UI
+      - "14250:14250" # jaeger-collector
