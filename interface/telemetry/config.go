@@ -20,7 +20,7 @@ func InitTracer(ctx context.Context, serviceName string) (func(), error) {
 	// 명시적으로 설정을 넣지 않아도 환경변수에서 읽음
 	exporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint("localhost:4317"))
+		otlptracegrpc.WithEndpoint("otel-collector:4317"))
 	if err != nil {
 		return nil, err
 	}
