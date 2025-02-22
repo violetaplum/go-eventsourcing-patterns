@@ -78,12 +78,16 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+      otel-collector:
+        condition: service_started
     environment:
       DB_HOST: postgres
       DB_NAME: user
       DB_PASSWORD: password
       KAFKA_BROKERS: kafka:9092
       KAFKA_TOPIC: account-events
+      OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4317"
+      OTEL_SERVICE_NAME: "account-api"
     ports:
       - "8080:8080"
 
@@ -100,6 +104,8 @@ services:
         condition: service_healthy
       account-api:
         condition: service_started
+      otel-collector:
+        condition: service_started
     environment:
       DB_HOST: postgres
       DB_NAME: eventstore
@@ -108,6 +114,8 @@ services:
       KAFKA_BROKERS: kafka:9092
       KAFKA_TOPIC: account-events    # account-events 토픽으로 설정되어 있는지 확인
       KAFKA_GROUP_ID: event-processor-group
+      OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4317"
+      OTEL_SERVICE_NAME: "event-processor"
 
 
 
@@ -121,6 +129,9 @@ services:
       - "4318:4318" # OTLP HTTP
       - "8888:8888" # metrics
       - "8889:8889" # prometheus metrics
+    depends_on:
+      jaeger:
+        condition: service_started
 
 
   jaeger:

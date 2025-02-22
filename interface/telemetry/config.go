@@ -13,6 +13,11 @@ import (
 )
 
 func InitTracer(ctx context.Context, serviceName string) (func(), error) {
+	// 환경변수에서 자동으로 값을 읽어옵니다:
+	// OTEL_EXPORTER_OTLP_ENDPOINT -> "otel-collector:4317"
+	// OTEL_SERVICE_NAME -> "account-api" 또는 "event-processor"
+
+	// 명시적으로 설정을 넣지 않아도 환경변수에서 읽음
 	exporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint("localhost:4317"))
