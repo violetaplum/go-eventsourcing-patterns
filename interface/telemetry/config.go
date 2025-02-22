@@ -17,13 +17,18 @@ func InitTracer(ctx context.Context, serviceName string) (func(), error) {
 	// OTEL_EXPORTER_OTLP_ENDPOINT -> "otel-collector:4317"
 	// OTEL_SERVICE_NAME -> "account-api" 또는 "event-processor"
 
+	log.Printf("Initializing tracer for service//// %s", serviceName)
+
 	// 명시적으로 설정을 넣지 않아도 환경변수에서 읽음
 	exporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint("otel-collector:4317"))
 	if err != nil {
+		log.Printf("Failed to create exporter: %v", err)
 		return nil, err
 	}
+
+	log.Printf("Exporter created successfully /////")
 
 	res, err := resource.New(ctx,
 		resource.WithAttributes(

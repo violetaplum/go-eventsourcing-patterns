@@ -19,8 +19,9 @@ func main() {
 	ctx := context.Background()
 
 	// OpenTelemetry 초기화
-	shutdown, err := telemetry.InitTracer(ctx, "account-service")
+	shutdown, err := telemetry.InitTracer(ctx, "account-api")
 	if err != nil {
+		log.Printf("Failed to initialize tracer/// %v", err)
 		log.Fatal(err)
 	}
 	defer shutdown()

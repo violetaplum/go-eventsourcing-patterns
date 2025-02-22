@@ -4,10 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"log"
 )
 
 func GinMiddleware(service string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		log.Printf("Processing request//// %s %s", c.Request.Method, c.Request.URL.Path)
+
 		// 트레이서 가져오기
 		tracer := otel.Tracer(service)
 
