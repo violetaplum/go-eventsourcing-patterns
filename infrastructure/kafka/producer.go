@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go-eventsourcing-patterns/domain"
+	"go.opentelemetry.io/otel"
 	"log"
 )
 
@@ -31,6 +32,9 @@ func NewEventPublisher(brokers string, topic string) (*EventPublisher, error) {
 }
 
 func (ep *EventPublisher) Publish(ctx context.Context, event domain.Event) error {
+	ctx, span := otel.Tracer("kafka-producer").Start(ctx, "produce-message")
+	defer span.End()
+
 	jsonEvent, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %v", err)

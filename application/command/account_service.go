@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"go-eventsourcing-patterns/domain"
+	"go.opentelemetry.io/otel"
 	"time"
 )
 
@@ -28,11 +29,14 @@ func NewAccountCommandService(accountStore domain.AccountStore, eventStore domai
 
 // CreateAccount는 Command를 받아서 처리
 func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.CreateAccountCommand) error {
-	ctx, err := s.txManager.Begin(ctx)
+	octx, span := otel.Tracer("postgres").Start(ctx, "create-account")
+	defer span.End()
+
+	tctx, err := s.txManager.Begin(octx)
 	if err != nil {
 		return err
 	}
-	defer s.txManager.Rollback(ctx)
+	defer s.txManager.Rollback(tctx)
 
 	account := &domain.Account{
 		ID:        cmd.AccountId,
@@ -42,7 +46,7 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 		UpdatedAt: time.Now(),
 	}
 
-	if err := s.accountStore.Create(ctx, account); err != nil {
+	if err := s.accountStore.Create(tctx, account); err != nil {
 		return err
 	}
 
@@ -63,22 +67,25 @@ func (s *AccountCommandService) CreateAccount(ctx context.Context, cmd domain.Cr
 		EventData: byteData,
 	}
 
-	if err := s.eventPublisher.Publish(ctx, event); err != nil {
+	if err := s.eventPublisher.Publish(tctx, event); err != nil {
 		return err
 	}
 
-	return s.txManager.Commit(ctx)
+	return s.txManager.Commit(tctx)
 }
 
 // Deposit은 Command를 받아서 처리
 func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositCommand) error {
-	ctx, err := s.txManager.Begin(ctx)
+	octx, span := otel.Tracer("postgres").Start(ctx, "deposit-account")
+	defer span.End()
+
+	tctx, err := s.txManager.Begin(octx)
 	if err != nil {
 		return err
 	}
-	defer s.txManager.Rollback(ctx)
+	defer s.txManager.Rollback(tctx)
 
-	account, err := s.accountStore.FindByID(ctx, cmd.AccountID)
+	account, err := s.accountStore.FindByID(tctx, cmd.AccountID)
 	if err != nil {
 		return err
 	}
@@ -88,7 +95,7 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 	account.Balance += cmd.Amount
 	account.UpdatedAt = time.Now()
 
-	if err := s.accountStore.Update(ctx, account); err != nil {
+	if err := s.accountStore.Update(tctx, account); err != nil {
 		return err
 	}
 	eventId := uuid.New().String()
@@ -112,22 +119,25 @@ func (s *AccountCommandService) Deposit(ctx context.Context, cmd domain.DepositC
 		EventType: string(domain.MoneyDeposited),
 	}
 
-	if err := s.eventPublisher.Publish(ctx, event); err != nil {
+	if err := s.eventPublisher.Publish(tctx, event); err != nil {
 		return err
 	}
 
-	return s.txManager.Commit(ctx)
+	return s.txManager.Commit(tctx)
 }
 
 // Withdraw은 Command를 받아서 처리
 func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.WithdrawCommand) error {
-	ctx, err := s.txManager.Begin(ctx)
+	octx, span := otel.Tracer("postgres").Start(ctx, "withdraw-account")
+	defer span.End()
+
+	tctx, err := s.txManager.Begin(octx)
 	if err != nil {
 		return err
 	}
-	defer s.txManager.Rollback(ctx)
+	defer s.txManager.Rollback(tctx)
 
-	account, err := s.accountStore.FindByID(ctx, cmd.AccountID)
+	account, err := s.accountStore.FindByID(tctx, cmd.AccountID)
 	if err != nil {
 		return err
 	}
@@ -141,7 +151,7 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 	account.Balance -= cmd.Amount
 	account.UpdatedAt = time.Now()
 
-	if err := s.accountStore.Update(ctx, account); err != nil {
+	if err := s.accountStore.Update(tctx, account); err != nil {
 		return err
 	}
 
@@ -167,9 +177,9 @@ func (s *AccountCommandService) Withdraw(ctx context.Context, cmd domain.Withdra
 		EventData: byteData,
 	}
 
-	if err := s.eventPublisher.Publish(ctx, event); err != nil {
+	if err := s.eventPublisher.Publish(tctx, event); err != nil {
 		return err
 	}
 
-	return s.txManager.Commit(ctx)
+	return s.txManager.Commit(tctx)
 }
