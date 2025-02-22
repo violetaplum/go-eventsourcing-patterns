@@ -58,7 +58,7 @@ func main() {
 	accountHandler := http.NewAccountHandler(commandService, queryService)
 
 	router := gin.Default()
-	router.Use(telemetry.WrapHandler)
+	router.Use(telemetry.GinMiddleware("account-api"))
 	accountHandler.SetupRoutes(router)
 
 	router.Run(":8080")
