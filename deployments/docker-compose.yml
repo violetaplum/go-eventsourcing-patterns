@@ -120,7 +120,7 @@ services:
 
 
   otel-collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:latest
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
@@ -139,3 +139,4 @@ services:
     ports:
       - "16686:16686" # UI
       - "14250:14250" # jaeger-collector
+      - "4317:4317"
