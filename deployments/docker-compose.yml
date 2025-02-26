@@ -136,7 +136,11 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_GRPC_HOST_PORT=:14317  # 올바른 환경 변수 (콜론 포함)
+      - COLLECTOR_OTLP_HTTP_HOST_PORT=:14318  # HTTP 포트도 변경
     ports:
       - "16686:16686" # UI
       - "14250:14250" # jaeger-collector
-      - "4317:4317"
+      - "14317:14317" # OTLP gRPC 포트
+      - "14318:14318" # OTLP HTTP 포트
