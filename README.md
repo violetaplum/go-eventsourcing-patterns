@@ -16,11 +16,14 @@ This project focuses on:
 
 - ⚡ Go 1.21+
 - 🐘 PostgreSQL (Event Store)
+- 📨 Apache Kafka (Event Distribution)
+- 📊 OpenTelemetry (Observability)
 - 🐳 Docker & Docker Compose
 - 🧪 Testing Tools
-    - Go Testing Framework
-    - Testcontainers
-    - GoMock
+  - Go Testing Framework
+  - Testcontainers
+  - GoMock
+  - HTTP API Testing
 
 ## 📁 Project Structure
 
@@ -98,6 +101,17 @@ This project focuses on:
 - Caching mechanisms
 - Batch processing
 - Concurrent event handling
+
+### 🔍 Observability
+- Distributed tracing with OpenTelemetry
+- Telemetry middleware for HTTP requests
+- Structured logging
+- Performance monitoring
+
+### 🌐 API Interface
+- HTTP REST API
+- API testing harness
+- Middleware support
 
 ## 🚀 Getting Started
 
