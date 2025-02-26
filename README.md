@@ -42,6 +42,7 @@ This project focuses on:
 │   ├── app
 │   │   └── Dockerfile
 │   ├── docker-compose.yml
+│   ├── otel-collector-config.yaml
 │   └── postgres
 │       └── init.sql
 ├── domain
@@ -65,13 +66,17 @@ This project focuses on:
 │           ├── connection.go
 │           └── event_store.go
 ├── interface
-│   └── http
-│       ├── account_handler.go
-│       └── account_handler_test.go
+│   ├── http
+│   │   ├── account_handler.go
+│   │   └── account_handler_test.go
+│   └── telemetry
+│       ├── config.go
+│       ├── middleware.go
+│       └── tracer.go
 └── tests
     └── api_test.http
 
-19 directories, 26 files
+20 directories, 30 files
 ```
 
 ## 🔥 Implementation Features
