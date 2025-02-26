@@ -1,6 +1,6 @@
 ### 환경 변수 설정
 @host = http://localhost:8080
-@accountId = 30169ecc-57b5-4e99-8dd8-7bf0ca2e865a
+@accountId = a2503b07-fce4-4e91-bffb-7a05a0667e02
 
 ### app 서버 헬스체크
 GET {{host}}/v1/_healthz
@@ -28,7 +28,7 @@ POST {{host}}/v1/account.deposit
 Content-Type: application/json
 
 {
-  "account_id": "30169ecc-57b5-4e99-8dd8-7bf0ca2e865a",
+  "account_id": "a2503b07-fce4-4e91-bffb-7a05a0667e02",
   "amount": 5000
 }
 
@@ -37,6 +37,6 @@ POST {{host}}/v1/account.withdraw
 Content-Type: application/json
 
 {
-  "account_id": "30169ecc-57b5-4e99-8dd8-7bf0ca2e865a",
+  "account_id": "a2503b07-fce4-4e91-bffb-7a05a0667e02",
   "amount": 2000
 }
