@@ -11,7 +11,7 @@ processors:
 
 exporters:
   otlp:
-    endpoint: jaeger:14317
+    endpoint: jaeger:14317 #중요
     tls:
       insecure: true
 
