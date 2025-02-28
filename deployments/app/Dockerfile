@@ -1,17 +1,17 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.22 AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache \
+# apt-get add 대신 apt-get install 사용, 캐시 정리 추가
+RUN apt-get update && apt-get install -y \
     git \
     librdkafka-dev \
-    pkgconfig \
-    build-base \
+    pkg-config \
+    build-essential \
     bash \
     gcc \
-    musl-dev \
-    linux-headers \
-    libc-dev
+    libc-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
@@ -20,20 +20,22 @@ RUN go mod download
 # http router 테스트 실행
 RUN go test -v ./...
 
-# CGO_ENABLED=1을 명시적으로 설정하고, 빌드 시 추가 플래그 사용
-RUN CGO_ENABLED=1 GOOS=linux go build -tags musl -o account ./cmd/account/main.go
-RUN CGO_ENABLED=1 GOOS=linux go build -tags musl -o event ./cmd/event/main.go
+# musl 태그 제거, 주석 처리된 줄 삭제
+RUN CGO_ENABLED=1 GOOS=linux go build -o account ./cmd/account/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -o event ./cmd/event/main.go
 
-FROM alpine:3.18 AS account-app
-RUN apk add --no-cache librdkafka-dev
+FROM ubuntu:22.04 AS account-app
+# apt-get add 대신 apt-get install 사용, 캐시 정리 추가
+RUN apt-get update && apt-get install -y librdkafka-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/account /account
 EXPOSE 8080
 
 CMD ["/account"]
 
-FROM alpine:3.18 AS event-app
-RUN apk add --no-cache librdkafka-dev
+FROM ubuntu:22.04 AS event-app
+# apt-get add 대신 apt-get install 사용, 캐시 정리 추가
+RUN apt-get update && apt-get install -y librdkafka-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/event /event
 
