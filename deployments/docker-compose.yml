@@ -23,29 +23,20 @@ services:
       KAFKA_PROCESS_ROLES: 'broker,controller' # KRaft 모드 활성화, zookeeper 없이 실행 가능하게함
       KAFKA_NODE_ID: 1 # 노드 ID
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
-
-      # 리스너 관련 설정 -> broker
       KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
-
-      # 클러스터 식별자
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-
-
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-
-      # KRaft 모드 초기화를 위한 중요 설정
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-
-
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qg'# 클러스터 식별을 위한 UUID
-
       TRIES: 0
       MAX_TRIES: 10
+
+
     ports:
       - "9092:9092"
     volumes:
