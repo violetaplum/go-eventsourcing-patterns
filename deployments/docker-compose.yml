@@ -32,9 +32,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qg'# 클러스터 식별을 위한 UUID
-      TRIES: 0
-      MAX_TRIES: 10
 
 
     ports:
