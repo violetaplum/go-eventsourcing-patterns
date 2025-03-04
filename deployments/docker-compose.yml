@@ -20,57 +20,88 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     environment:
-      KAFKA_PROCESS_ROLES: 'broker,controller' # KRaft 모드 활성화, zookeeper 없이 실행 가능하게함
-      KAFKA_NODE_ID: 1 # 노드 ID
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
+      # KRaft 모드 필수 설정
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
 
-      # 리스너 관련 설정 -> broker
+      # 리스너 설정 - 중요 변경사항
       KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
-    
-      # 클러스터 식별자
+
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      # 추가 중요 설정
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
-      CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A==' # 클러스터 식별을 위한 UUID
+      # KRaft 관련 중요 설정
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
-      TRIES: 0
-      MAX_TRIES: 10
+      # 클러스터 ID - 임의의 값으로 설정
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qg'
     ports:
       - "9092:9092"
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 10s
-      timeout: 20s
-      retries: 10
-      start_period: 30s
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
+    volumes:
+      - kafka_data:/tmp/kraft-combined-logs
     command: >
-      sh -c '
+      bash -c '
+        echo "Kafka KRaft 모드 초기화..."
+      
+        # 클러스터 ID 형식 설정
+        export CLUSTER_ID=$(kafka-storage random-uuid)
+        echo "생성된 클러스터 ID: $CLUSTER_ID"
+      
+        # 저장소 디렉토리 포맷팅
+        echo "저장소 디렉토리 포맷팅 중..."
+        kafka-storage format -t $CLUSTER_ID -c /etc/kafka/kraft/server.properties
+      
         # Kafka 서버 시작
+        echo "Kafka 서버 시작 중..."
         /etc/confluent/docker/run &
       
-        # Kafka가 완전히 시작될 때까지 대기
+        # Kafka가 시작될 때까지 대기
+        echo "Kafka 서버가 시작될 때까지 대기 중..."
+        sleep 30
+      
+        # 토픽 생성 시도 (최대 10회)
         MAX_TRIES=10
         TRIES=0
-        while [ $TRIES -lt $MAX_TRIES ]; do
-          kafka-topics --bootstrap-server kafka:9092 --list && break
-          echo "Waiting for Kafka to be ready..."
-          sleep 10
-          TRIES=$((TRIES+1))
+        SUCCESS=false
+      
+        while [ $TRIES -lt $MAX_TRIES ] && [ "$SUCCESS" = "false" ]; do
+          if kafka-topics --bootstrap-server localhost:9092 --list; then
+            echo "Kafka 서버에 연결 성공!"
+      
+            # 토픽 생성
+            echo "토픽 생성 중..."
+            kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic account-events --if-not-exists
+            kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic audit-logs --if-not-exists
+      
+            SUCCESS=true
+          else
+            TRIES=$((TRIES+1))
+            echo "Kafka 서버 연결 대기 중... (시도 $TRIES/$MAX_TRIES)"
+            sleep 10
+          fi
         done
       
-        # 토픽 생성
-        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic account-events --if-not-exists
-        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic audit-logs --if-not-exists
+        if [ "$SUCCESS" = "false" ]; then
+          echo "Kafka 서버 연결 실패 - 타임아웃"
+        fi
       
-        # 메인 프로세스 대기
+        # 메인 프로세스 유지
         wait
       '
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 
 
   account-api:
@@ -149,3 +180,7 @@ services:
       - "14250:14250" # jaeger-collector
       - "14317:14317" # OTLP gRPC 포트
       - "14318:14318" # OTLP HTTP 포트
+
+
+volumes:
+  kafak_data:
