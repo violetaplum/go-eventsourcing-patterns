@@ -3,7 +3,7 @@
 #@host = http://localhost:8080
 # AWS 인스턴스 테스트
 @host = http://54.91.230.161:8080
-@accountId = a2503b07-fce4-4e91-bffb-7a05a0667e02
+@accountId = dd3062c1-7584-4e28-a07f-3eec4fada318
 
 ### app 서버 헬스체크
 GET {{host}}/v1/_healthz
@@ -31,7 +31,7 @@ POST {{host}}/v1/account.deposit
 Content-Type: application/json
 
 {
-  "account_id": "a2503b07-fce4-4e91-bffb-7a05a0667e02",
+  "account_id": "dd3062c1-7584-4e28-a07f-3eec4fada318",
   "amount": 5000
 }
 
@@ -40,6 +40,6 @@ POST {{host}}/v1/account.withdraw
 Content-Type: application/json
 
 {
-  "account_id": "a2503b07-fce4-4e91-bffb-7a05a0667e02",
+  "account_id": "dd3062c1-7584-4e28-a07f-3eec4fada318",
   "amount": 2000
 }
