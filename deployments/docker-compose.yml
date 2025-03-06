@@ -20,6 +20,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:latest
     environment:
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
       KAFKA_PROCESS_ROLES: 'broker,controller' # KRaft 모드 활성화, zookeeper 없이 실행 가능하게함
       KAFKA_NODE_ID: 1 # 노드 ID
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
