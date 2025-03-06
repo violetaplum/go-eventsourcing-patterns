@@ -50,51 +50,51 @@ services:
         max_attempts: 3
     command: >
       bash -c '
-      echo "Kafka KRaft 모드 초기화..."
+      echo "Initializing Kafka KRaft mode..."
       
-      # 클러스터 ID 형식 설정
+      # Generate cluster ID
       export CLUSTER_ID=$(kafka-storage random-uuid)
-      echo "생성된 클러스터 ID: $CLUSTER_ID"
+      echo "Generated cluster ID: $CLUSTER_ID"
       
-      # 저장소 디렉토리 포맷팅
-      echo "저장소 디렉토리 포맷팅 중..."
+      # Format storage directory
+      echo "Formatting storage directory..."
       kafka-storage format -t $CLUSTER_ID -c /etc/kafka/kraft/server.properties
       
-      # Kafka 서버 시작
-      echo "Kafka 서버 시작 중..."
+      # Start Kafka server
+      echo "Starting Kafka server..."
       /etc/confluent/docker/run &
       
-      # Kafka가 시작될 때까지 대기
-      echo "Kafka 서버가 시작될 때까지 대기 중..."
+      # Wait for Kafka to start
+      echo "Waiting for Kafka server to start..."
       sleep 30
       
-      # 토픽 생성 시도 (최대 10회)
+      # Try to create topics (max 10 attempts)
       MAX_TRIES=10
       TRIES=0
       SUCCESS=false
       
       while [ $TRIES -lt $MAX_TRIES ] && [ "$SUCCESS" = "false" ]; do
-      if kafka-topics --bootstrap-server localhost:9092 --list; then
-      echo "Kafka 서버에 연결 성공!"
+        if kafka-topics --bootstrap-server localhost:9092 --list; then
+          echo "Successfully connected to Kafka server!"
       
-      # 토픽 생성
-      echo "토픽 생성 중..."
-      kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic account-events --if-not-exists
-      kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic audit-logs --if-not-exists
+          # Create topics
+          echo "Creating topics..."
+          kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic account-events --if-not-exists
+          kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic audit-logs --if-not-exists
       
-      SUCCESS=true
-      else
-      TRIES=$((TRIES+1))
-      echo "Kafka 서버 연결 대기 중... (시도 $TRIES/$MAX_TRIES)"
-      sleep 10
-      fi
+          SUCCESS=true
+        else
+          TRIES=$((TRIES+1))
+          echo "Waiting for Kafka server connection... (attempt $TRIES/$MAX_TRIES)"
+          sleep 10
+        fi
       done
       
       if [ "$SUCCESS" = "false" ]; then
-      echo "Kafka 서버 연결 실패 - 타임아웃"
+        echo "Failed to connect to Kafka server - timeout"
       fi
       
-      # 메인 프로세스 유지
+      # Keep main process running
       wait
       '
 
