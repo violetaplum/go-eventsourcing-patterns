@@ -1,0 +1,45 @@
+### 환경 변수 설정
+# 로컬테스트
+@host = http://localhost:8080
+# AWS 인스턴스 테스트
+#@host = http://54.91.230.161:8080
+@accountId = 5ddbb258-25d4-422d-9f5a-c88b89036776
+
+### app 서버 헬스체크
+GET {{host}}/v1/_healthz
+Content-Type: application/json
+
+### 새 계좌 생성
+POST {{host}}/v1/account.create
+Content-Type: application/json
+
+{
+  "user_name": "test_user_1",
+  "initial_balance": 10000
+}
+
+
+### 전체 계좌 목록 조회
+GET {{host}}/v1/account.list
+
+### 특정 계좌 조회
+GET {{host}}/v1/account.info?account_id={{accountId}}
+
+
+### 입금
+POST {{host}}/v1/account.deposit
+Content-Type: application/json
+
+{
+  "account_id": "5ddbb258-25d4-422d-9f5a-c88b89036776",
+  "amount": 5000
+}
+
+### 출금
+POST {{host}}/v1/account.withdraw
+Content-Type: application/json
+
+{
+  "account_id": "5ddbb258-25d4-422d-9f5a-c88b89036776",
+  "amount": 2000
+}

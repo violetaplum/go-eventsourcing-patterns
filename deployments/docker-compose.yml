@@ -23,79 +23,49 @@ services:
       KAFKA_PROCESS_ROLES: 'broker,controller' # KRaft 모드 활성화, zookeeper 없이 실행 가능하게함
       KAFKA_NODE_ID: 1 # 노드 ID
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093' # 컨트롤러 쿼텀 설정
-      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+
+      # 리스너 관련 설정 -> broker
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:29093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+
+      # 클러스터 식별자
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
 
-
+      CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A==' # 클러스터 식별을 위한 UUID
     ports:
       - "9092:9092"
-    volumes:
-      - kafka_data:/tmp/kraft-combined-logs
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:9092 --list"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 3
     command: >
-      bash -c '
-      echo "Initializing Kafka KRaft mode..."
+      sh -c '
+        # Kafka 서버 시작
+        /etc/confluent/docker/run &
       
-      # Generate cluster ID
-      export CLUSTER_ID=$(kafka-storage random-uuid)
-      echo "Generated cluster ID: $CLUSTER_ID"
-      
-      # Format storage directory
-      echo "Formatting storage directory..."
-      kafka-storage format -t $CLUSTER_ID -c /etc/kafka/kraft/server.properties
-      
-      # Start Kafka server
-      echo "Starting Kafka server..."
-      /etc/confluent/docker/run &
-      
-      # Wait for Kafka to start
-      echo "Waiting for Kafka server to start..."
-      sleep 30
-      
-      # Try to create topics (max 10 attempts)
-      MAX_TRIES=10
-      TRIES=0
-      SUCCESS=false
-      
-      while [ $TRIES -lt $MAX_TRIES ] && [ "$SUCCESS" = "false" ]; do
-        if kafka-topics --bootstrap-server localhost:9092 --list; then
-          echo "Successfully connected to Kafka server!"
-      
-          # Create topics
-          echo "Creating topics..."
-          kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic account-events --if-not-exists
-          kafka-topics --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic audit-logs --if-not-exists
-      
-          SUCCESS=true
-        else
-          TRIES=$((TRIES+1))
-          echo "Waiting for Kafka server connection... (attempt $TRIES/$MAX_TRIES)"
+        # Kafka가 완전히 시작될 때까지 대기
+        MAX_TRIES=10
+        TRIES=0
+        while [ $TRIES -lt $MAX_TRIES ]; do
+          kafka-topics --bootstrap-server kafka:9092 --list && break
+          echo "Waiting for Kafka to be ready..."
           sleep 10
-        fi
-      done
+          TRIES=$((TRIES+1))
+        done
       
-      if [ "$SUCCESS" = "false" ]; then
-        echo "Failed to connect to Kafka server - timeout"
-      fi
+        # 토픽 생성
+        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic account-events
+        kafka-topics --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 1 --topic audit-logs
       
-      # Keep main process running
-      wait
+        # 메인 프로세스 대기
+        wait
       '
 
 
@@ -175,7 +145,3 @@ services:
       - "14250:14250" # jaeger-collector
       - "14317:14317" # OTLP gRPC 포트
       - "14318:14318" # OTLP HTTP 포트
-
-
-volumes:
-  kafka_data:
